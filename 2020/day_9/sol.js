@@ -16,28 +16,28 @@ console.log(input.slice(0, 10));
 let preamble = 25;
 let result = 0;
 
-let validOptions = input.slice(0, preamble);
-console.log(validOptions)
-outer: for (let i = preamble; i < input.length; i++) {
-	console.log(input)
-	console.log(`looking for ${input[i]}`)
-	let found = false;
-	search: for (let j = 0; j < preamble - 1 ; j++) {
-		for (let k = j + 1; k < preamble ; k++) {
-			console.log(`considering ${validOptions[j]} and ${validOptions[k]} = ${validOptions[j] + validOptions[k]}`)
-			if ((validOptions[j] + validOptions[k]) == input[i]) {
-				console.log(`found!`)
-				found = true;
-				break search;
-			}
-		}
+let validSums = [];
+for (let i = 0; i < preamble - 1; i++) {
+	let v1 = input[i];
+	validSums[i] = [];
+	for (let j = i + 1; j < preamble; j++) {
+		let v2 = input[j];
+		validSums[i].push(v1 + v2);
 	}
-	if (!found) {
-		result = input[i]
+}
+for (let i = preamble; i < input.length; i++) {
+	let v = input[i];
+	if (!new Set(validSums.flat()).has(v)) {
+		result = v;
 		break;
 	}
-	validOptions.shift()
-	validOptions.push(input[i])
+
+	for (let j = 1; j < preamble; j++) {
+		let v1 = input[i - preamble + j];
+		validSums[j] = validSums[j] || [];
+		validSums[j].push(v1 + v);
+	}
+	validSums.shift();
 }
 
 console.log(`Result: ${result}`);
