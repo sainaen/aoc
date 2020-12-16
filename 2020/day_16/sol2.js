@@ -71,7 +71,6 @@ for (let i = 0; i < validOtherTickets[0].length; i++) {
 }
 let rulesByFields = [];
 for (let j = 0; j < fields.length; j++) {
-	console.log(j, fields[j])
 	let matchingRules = rules.filter((r) => {
 		return (
 			fields[j].length ===
@@ -83,8 +82,7 @@ for (let j = 0; j < fields.length; j++) {
 		);
 	});
 	if (matchingRules.length != 1) {
-		console.error(`Field ${j} matched more than one rule!`);
-		console.error(matchingRules);
+		console.error(`Field ${j} matched more than one rule: ${matchingRules.map(r => r.name)}`);
 	}
 	rulesByFields.push(matchingRules);
 }
@@ -92,31 +90,31 @@ for (let j = 0; j < fields.length; j++) {
 let knownPoses = {
 	class: 0,
 	row: 1,
-	'departure time': 2,
+	"departure time": 2,
 	type: 3,
 	price: 4,
-	'departure track': 5,
+	"departure track": 5,
 	zone: 6,
 	wagon: 7,
-	'departure station': 8,
-	'arrival location': 9,
-	'departure location': 10,
-	'arrival station': 11,
+	"departure station": 8,
+	"arrival location": 9,
+	"departure location": 10,
+	"arrival station": 11,
 	route: 12,
-	'arrival track': 13,
-	'departure date': 14,
+	"arrival track": 13,
+	"departure date": 14,
 	duration: 15,
 	train: 16,
-	'arrival platform': 17,
-	'departure platform': 18,
+	"arrival platform": 17,
+	"departure platform": 18,
 	seat: 19,
 };
 
 let result = 1;
 for (let r in knownPoses) {
 	let pos = knownPoses[r];
-	if (r.indexOf('departure') == 0) {
+	if (r.indexOf("departure") == 0) {
 		result *= myTicket[pos];
 	}
 }
-console.log(`Result: ${result}`)
+console.log(`Result: ${result}`);

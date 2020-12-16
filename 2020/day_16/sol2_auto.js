@@ -71,7 +71,6 @@ for (let i = 0; i < validOtherTickets[0].length; i++) {
 }
 let rulesByFields = [];
 for (let j = 0; j < fields.length; j++) {
-	console.log(j, fields[j]);
 	let matchingRules = rules.filter((r) => {
 		return (
 			fields[j].length ===
@@ -83,8 +82,7 @@ for (let j = 0; j < fields.length; j++) {
 		);
 	});
 	if (matchingRules.length != 1) {
-		console.error(`Field ${j} matched more than one rule!`);
-		console.error(matchingRules);
+		console.error(`Field ${j} matched more than one rule: ${matchingRules.map(r => r.name)}`);
 	}
 	rulesByFields.push(matchingRules);
 }
