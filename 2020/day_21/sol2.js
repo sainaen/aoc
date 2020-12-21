@@ -64,14 +64,14 @@ for (let i = 0; i < limit; i++) {
 		}
 	}
 	if (!changed) {
-		console.log(`Mapping has changed on iteration ${i}`);
+		console.log(`Mapping has not changed on iteration ${i}`);
 		break;
 	}
 }
 
 let result = Object.entries(alls)
 	.sort(([all1], [all2]) => {
-		console.log(all1, all2);
+		// console.log(all1, all2);
 		return all1.localeCompare(all2);
 	})
 	.map(([_, ing]) => [...ing.values()])
