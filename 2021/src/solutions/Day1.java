@@ -4,6 +4,13 @@ import java.util.List;
 
 import static utils.Utils.*;
 
+/*
+Result:
+
+-------Part 1--------   -------Part 2--------
+    Time  Rank  Score       Time  Rank  Score
+00:01:40   407      0   00:09:07  2101      0
+ */
 public class Day1 {
 
     public static void main(String[] args) throws Exception {
