@@ -7,9 +7,9 @@ import static utils.Utils.*;
 /*
 Result:
 
--------Part 1--------   -------Part 2--------
-    Time  Rank  Score       Time  Rank  Score
-00:01:40   407      0   00:09:07  2101      0
+      -------Part 1--------   -------Part 2--------
+Day       Time  Rank  Score       Time  Rank  Score
+  1   00:01:40   407      0   00:09:07  2101      0
  */
 public class Day1 {
 
