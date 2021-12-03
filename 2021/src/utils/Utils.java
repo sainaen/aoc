@@ -6,6 +6,7 @@ import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
@@ -138,5 +139,56 @@ public class Utils {
     public static long[] longs(List<String> input) {
         return input.stream().mapToLong(Long::parseLong).toArray();
     }
+
+    public static long[] longs(List<String> input, int base) {
+        return input.stream().mapToLong(s -> Long.parseLong(s, base)).toArray();
+    }
+
+    @SuppressWarnings("unchecked")
+    public static <T> T[] filter(T[] a, Predicate<T> test) {
+        return (T[]) Arrays.stream(a).filter(test).toArray(Object[]::new);
+    }
+
+    public static long[] filter(long[] a, Predicate<Long> test) {
+        return Arrays.stream(a).filter(test::test).toArray();
+    }
+
+    @SuppressWarnings("unchecked")
+    public static <T, R> R[] map(T[] a, Function<T, R> map) {
+        return (R[]) Arrays.stream(a).map(map).toArray(Object[]::new);
+    }
+
+    @SuppressWarnings("unchecked")
+    public static <R> R[] map(long[] a, Function<Long, R> map) {
+        return (R[]) Arrays.stream(a).mapToObj(map::apply).toArray(Object[]::new);
+    }
+
+    public static int bit(long l, int i) {
+        return (int) ((l >> i) & 0x1);
+    }
+
+    public static void print(long[] longs) {
+        print(longs, 10);
+    }
+
+    public static void print(long[] longs, int base) {
+        String[] strings = new String[longs.length];
+        var maxLen = 0;
+        for (int i = 0; i < longs.length; i++) {
+            long l = longs[i];
+            strings[i] = Long.toString(l, base);
+            maxLen = Math.max(strings[i].length(), maxLen);
+        }
+        System.out.print("[ ");
+        for (int i = 0; i < strings.length; i++) {
+            var s = "0".repeat(Math.max(0, maxLen - strings[i].length())) + strings[i];
+            System.out.print(s);
+            if (i < strings.length - 1) {
+                System.out.print(", ");
+            }
+        }
+        System.out.println("]");
+    }
+
 
 }
