@@ -3,6 +3,7 @@ package utils;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.function.Predicate;
@@ -74,6 +75,12 @@ public class Utils {
         a[j] = tmp;
     }
 
+    public static <T> void swap(List<T> a, int i, int j) {
+        T tmp = a.get(i);
+        a.set(i, a.get(j));
+        a.set(j, tmp);
+    }
+
     private static List<String> cleanup(List<String> lines) {
         return lines.stream()
                 .map(String::strip)
@@ -81,9 +88,12 @@ public class Utils {
                 .collect(Collectors.toList());
     }
 
-    public static List<String> day(int day) {
+    public static List<String> day(int day, boolean cleanup) {
         try {
-            List<String> lines = cleanup(Files.readAllLines(Path.of("2021/inputs", "day" + day + ".txt")));
+            List<String> lines = Files.readAllLines(Path.of("2021/inputs", "day" + day + ".txt"));
+            if (cleanup) {
+                lines = cleanup(lines);
+            }
             System.out.println("read in " + lines.size() + " lines...");
             return lines;
         } catch (IOException e) {
@@ -91,8 +101,38 @@ public class Utils {
         }
     }
 
+    public static List<String> day(int day) {
+        return day(day, true);
+    }
+
+    private static List<List<String>> splitLinesByEmpty(List<String> lines) {
+        List<List<String>> result = new ArrayList<>();
+        List<String> currentGroup = new ArrayList<>();
+        for (String rawLine : lines) {
+            String line = rawLine.strip();
+            if (!line.isEmpty()) {
+                currentGroup.add(line);
+            } else if (!currentGroup.isEmpty()) {
+                result.add(currentGroup);
+                currentGroup = new ArrayList<>();
+            }
+        }
+        if (!currentGroup.isEmpty()) {
+            result.add(currentGroup);
+        }
+        return result;
+    }
+
+    public static List<List<String>> dayGroup(int day) {
+        return splitLinesByEmpty(day(day, false));
+    }
+
     public static List<String> sample(String sampleText) {
         return cleanup(Arrays.asList(sampleText.split("\n")));
+    }
+
+    public static List<List<String>> sampleGroup(String sampleText) {
+        return splitLinesByEmpty(Arrays.asList(sampleText.split("\n")));
     }
 
     public static long[] longs(List<String> input) {

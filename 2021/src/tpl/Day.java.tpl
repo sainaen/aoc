@@ -12,12 +12,12 @@ public class Day<n> {
 
                 """);
 
-        System.out.println("Sample1: " + part1(sample1));
+        System.out.println("Sample: " + part1(sample1));
         System.out.println("Result: " + part1(input));
 
         System.out.println("---");
 
-        // System.out.println("Sample1: " + part2(sample1));
+        // System.out.println("Sample: " + part2(sample1));
         // System.out.println("Result: " + part2(input));
     }
 
