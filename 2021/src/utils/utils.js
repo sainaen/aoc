@@ -1,5 +1,15 @@
 let fs = require("fs");
 
+function last(a) {
+    return a[a.length - 1];
+}
+exports.last = last;
+
+function remove(a, i) {
+    a.splice(i, 1);
+}
+exports.remove = remove;
+
 function swap(a, i, j) {
     let tmp = a[i];
     a[i] = a[j];
@@ -69,7 +79,12 @@ function sampleGroup(text) {
 }
 exports.sampleGroup = sampleGroup;
 
-function longs(lines, base = 10) {
-    return lines.map(v => parseInt(v, base));
+function longs(strs, {base = 10, split = null} = {}) {
+    if (split) {
+        strs = strs.split(split);
+    }
+    return strs.map(v => v.trim())
+               .filter(v => v)
+               .map(v => parseInt(v, base));
 }
 exports.longs = longs;

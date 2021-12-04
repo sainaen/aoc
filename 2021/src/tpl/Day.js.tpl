@@ -1,6 +1,7 @@
 #!/usr/bin/env node
 
 let utils = require("../utils/utils");
+let {last, longs, remove, swap} = utils;
 
 function main() {
     let input = utils.day(<n>);
