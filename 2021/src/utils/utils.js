@@ -55,7 +55,7 @@ function sampleGroup(text) {
 }
 exports.sampleGroup = sampleGroup;
 
-function longs(lines) {
-    return lines.map(v => parseInt(v, 10));
+function longs(lines, base=10) {
+    return lines.map(v => parseInt(v, base));
 }
 exports.longs = longs;
