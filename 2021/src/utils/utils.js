@@ -45,8 +45,22 @@ function dayGroup(d) {
 }
 exports.dayGroup = dayGroup;
 
-function sample(text) {
-    return cleanup(text.split("\n"));
+function sample(text, shouldCleanup = true) {
+    let lines;
+    if (typeof text == "number") {
+        lines = fs.readFileSync(`inputs/day${text}_sample.txt`, "utf-8").split("\n");
+        if (shouldCleanup) {
+            lines = cleanup(lines);
+        }
+        return lines;
+    } else {
+        lines = text.split("\n");
+    }
+
+    if (shouldCleanup) {
+        lines = cleanup(lines);
+    }
+    return lines;
 }
 exports.sample = sample;
 
@@ -55,7 +69,7 @@ function sampleGroup(text) {
 }
 exports.sampleGroup = sampleGroup;
 
-function longs(lines, base=10) {
+function longs(lines, base = 10) {
     return lines.map(v => parseInt(v, base));
 }
 exports.longs = longs;
