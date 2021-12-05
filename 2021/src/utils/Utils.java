@@ -144,6 +144,18 @@ public class Utils {
         return input.stream().mapToLong(s -> Long.parseLong(s, base)).toArray();
     }
 
+    public static long[] longs(String input, String split) {
+        return longs(input, split, 10);
+    }
+
+    public static long[] longs(String input, String split, int base) {
+        return Arrays.stream(input.split(split))
+                .map(String::strip)
+                .filter(Predicate.not(String::isEmpty))
+                .mapToLong(s -> Long.parseLong(s, base))
+                .toArray();
+    }
+
     @SuppressWarnings("unchecked")
     public static <T> T[] filter(T[] a, Predicate<T> test) {
         return (T[]) Arrays.stream(a).filter(test).toArray(Object[]::new);
