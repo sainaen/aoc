@@ -33,11 +33,16 @@ function main() {
     console.log(`Result: ${part2(input)}`)
 }
 
+function parse(strings) {
+    return strings.map(s => {
+        let parts = s.split(' -> ');
+        return {start: longs(parts[0], {split: ','}), end: longs(parts[1], {split: ','})};
+    });
+}
+
 function coverHoriz(field, {start, end}) {
     let y = start[1];
-    let startX = Math.min(start[0], end[0]);
-    let endX = Math.max(start[0], end[0]);
-    for (let x = startX; x <= endX; x++) {
+    for (let x = Math.min(start[0], end[0]); x <= Math.max(start[0], end[0]); x++) {
         if (!field[y]) {
             field[y] = [];
         }
@@ -47,9 +52,7 @@ function coverHoriz(field, {start, end}) {
 
 function coverVert(field, {start, end}) {
     let x = start[0];
-    let startY = Math.min(start[1], end[1]);
-    let endY = Math.max(start[1], end[1]);
-    for (let y = startY; y <= endY; y++) {
+    for (let y = Math.min(start[1], end[1]); y <= Math.max(start[1], end[1]); y++) {
         if (!field[y]) {
             field[y] = [];
         }
@@ -58,51 +61,23 @@ function coverVert(field, {start, end}) {
 }
 
 function part1(strings) {
-    let lines = strings.map(s => {
-        let parts = s.split(' -> ');
-        return {start: longs(parts[0], {split: ','}), end: longs(parts[1], {split: ','})};
-    })
-
     let field = [];
-
-    for (let line of lines) {
+    for (let line of parse(strings)) {
         if (line.start[0] === line.end[0]) {
             coverVert(field, line)
-        }
-        if (line.start[1] === line.end[1]) {
+        } else if (line.start[1] === line.end[1]) {
             coverHoriz(field, line);
         }
     }
-
-    let rowLen = 0;
-    for (let i = 0; i < field.length; i++) {
-        field[i] = field[i] || [];
-        rowLen = Math.max(field[i].length, rowLen);
-    }
-    for (let i = 0; i < field.length; i++) {
-        for (let j = 0; j < rowLen; j++) {
-            field[i][j] = field[i][j] || 0;
-        }
-    }
-    let result = 0;
-    for (let row of field) {
-        for (let el of row) {
-            if (el >= 2) {
-                result += 1;
-            }
-        }
-    }
-
-    return result;
+    return field.reduce((res, row) => res + row.filter(v => v >= 2).length, 0);
 }
 
 function coverDiag(field, {start, end}) {
-    let yCheck = start[1] < end[1] ? (y => y <= end[1]) : (y => y >= end[1]);
-    let yInc = start[1] > end[1] ? (y => y-1) : (y => y+1);
-    let xCheck = start[0] < end[0] ? (x => x <= end[0]) : (x => x >= end[0]);
-    let xInc = start[0] > end[0] ? (x => x-1) : (x => x+1);
+    let yCheck = start[1] < end[1] ? (v => v <= end[1]) : (v => v >= end[1]);
+    let yInc = start[1] > end[1] ? -1 : 1;
+    let xInc = start[0] > end[0] ? -1 : 1;
 
-    for (let y = start[1], x = start[0]; yCheck(y) && xCheck(x); y=yInc(y), x=xInc(x)) {
+    for (let y = start[1], x = start[0]; yCheck(y); y+=yInc, x+=xInc) {
         if (!field[y]) {
             field[y] = [];
         }
@@ -111,14 +86,8 @@ function coverDiag(field, {start, end}) {
 }
 
 function part2(strings) {
-    let lines = strings.map(s => {
-        let parts = s.split(' -> ');
-        return {start: longs(parts[0], {split: ','}), end: longs(parts[1], {split: ','})};
-    })
-
     let field = [];
-
-    for (let line of lines) {
+    for (let line of parse(strings)) {
         if (line.start[0] === line.end[0]) {
             coverVert(field, line)
         } else if (line.start[1] === line.end[1]) {
@@ -127,29 +96,7 @@ function part2(strings) {
             coverDiag(field, line);
         }
     }
-
-    let rowLen = 0;
-    for (let i = 0; i < field.length; i++) {
-        field[i] = field[i] || [];
-        rowLen = Math.max(field[i].length, rowLen);
-    }
-    for (let i = 0; i < field.length; i++) {
-        for (let j = 0; j < rowLen; j++) {
-            field[i][j] = field[i][j] || 0;
-        }
-    }
-
-    let result = 0;
-    for (let row of field) {
-        for (let el of row) {
-            if (el >= 2) {
-                result += 1;
-            }
-        }
-    }
-
-    return result;
+    return field.reduce((res, row) => res + row.filter(v => v >= 2).length, 0);
 }
 
 main();
-

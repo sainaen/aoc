@@ -7,10 +7,11 @@ Day       Time  Rank  Score       Time  Rank  Score
  */
 
 let utils = require("../utils/utils");
+let {last, longs, remove, swap} = utils;
 
 function main() {
-    let input = utils.day(4, false);
-    let sample1 = utils.sample(`
+    let input = utils.dayGroup(4);
+    let sample1 = utils.sampleGroup(`
     7,4,9,5,11,17,23,2,0,14,21,24,10,16,13,6,15,25,12,22,18,20,8,19,3,26,1
 
     22 13 17 11  0
@@ -29,8 +30,8 @@ function main() {
     10 16 15  9 19
     18  8 23 26 20
     22 11 13  6  5
-     2  0 12  3  7
-    `, false);
+     2  0 12  3  7 
+    `);
 
     console.log(`Sample: ${part1(sample1)}`)
     console.log(`Result: ${part1(input)}`)
@@ -57,32 +58,6 @@ function isWinning(board, numbers) {
     return false;
 }
 
-function part1(strings) {
-    let parts = strings.join('\n').split('\n\n');
-
-    let numbers = parts.shift().split(',').map(v => parseInt(v, 10));
-
-    let boards = parts.filter(v => v).map(block => {
-        return block.split('\n').map(l => l.split(/\s+/).filter(v => v).map(v => parseInt(v.trim(), 10))).filter(v => v.length);
-    })
-
-    let winner;
-    let roundNums;
-    for (let i = 1; i < numbers.length; i++) {
-        roundNums = numbers.slice(0, i);
-        winner = boards.filter(b => isWinning(b, roundNums))
-        if (winner.length === 1) {
-            winner = winner[0]
-            break;
-        }
-    }
-
-    let result = findUnmarked(winner, roundNums).reduce((a,b) => a + b);
-    result *= roundNums[roundNums.length - 1];
-
-    return result;
-}
-
 function findUnmarked(board, numbers) {
     let result = [];
     for (let row = 0; row < board.length; row++) {
@@ -95,14 +70,40 @@ function findUnmarked(board, numbers) {
     return result;
 }
 
-function part2(strings) {
-    let parts = strings.join('\n').split('\n\n');
+function parse([[numbersStr], ...boardsStr]) {
+    let numbers = longs(numbersStr, {split: ','});
 
-    let numbers = parts.shift().split(',').map(v => parseInt(v, 10));
+    let boards = boardsStr.map(board => {
+        return board.map(l => longs(l, {split: /\s+/}));
+    });
+    return {numbers, boards};
+}
 
-    let boards = parts.filter(v => v).map(block => {
-        return block.split('\n').map(l => l.split(/\s+/).filter(v => v).map(v => parseInt(v.trim(), 10))).filter(v => v.length);
-    })
+function score(board, numbers) {
+    let result = findUnmarked(board, numbers).reduce((a, b) => a + b);
+    result *= last(numbers);
+    return result;
+}
+
+function part1(groups) {
+    let {numbers, boards} = parse(groups);
+
+    let winner;
+    let roundNums;
+    for (let i = 1; i < numbers.length; i++) {
+        roundNums = numbers.slice(0, i);
+        winner = boards.filter(b => isWinning(b, roundNums))
+        if (winner.length === 1) {
+            winner = winner[0]
+            break;
+        }
+    }
+
+    return score(winner, roundNums);
+}
+
+function part2(groups) {
+    let {numbers, boards} = parse(groups);
 
     let lastWinner;
     let lastWinningNumbers;
@@ -116,16 +117,12 @@ function part2(strings) {
         while (winner > -1) {
             lastWinner = boards[winner];
             lastWinningNumbers = roundNums;
-            boards.splice(winner, 1)
+            remove(boards, winner);
             winner = boards.findIndex(b => isWinning(b, roundNums));
         }
     }
 
-    let result = findUnmarked(lastWinner, lastWinningNumbers).reduce((a,b) => a + b, 0);
-    result *= lastWinningNumbers[lastWinningNumbers.length - 1];
-
-    return result;
+    return score(lastWinner, lastWinningNumbers);
 }
 
 main();
-
