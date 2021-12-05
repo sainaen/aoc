@@ -26,4 +26,3 @@ function part1(strings) {
 }
 
 main();
-
