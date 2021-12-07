@@ -6,14 +6,16 @@ let {last, longs, remove, swap} = utils;
 function main() {
     let input = utils.day(<n>);
     let sample1 = utils.sample(`
-    `)
+    `);
 
-    console.log(`Sample: ${part1(sample1)}`)
+    let expected1_1 =
+    console.log(`Sample: ${part1(sample1)} (expected: ${expected1_1})`)
     console.log(`Result: ${part1(input)}`)
 
     console.log("---")
 
-    // console.log(`Sample: ${part2(sample1)}`)
+    // let expected1_2 =
+    // console.log(`Sample: ${part2(sample1)} (expected: ${expected1_2})`)
     // console.log(`Result: ${part2(input)}`)
 }
 
