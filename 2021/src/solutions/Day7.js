@@ -1,5 +1,11 @@
 #!/usr/bin/env node
 
+/*
+        -------Part 1--------   -------Part 2--------
+Day       Time  Rank  Score       Time  Rank  Score
+  7   00:04:48  1316      0   00:07:37   984      0
+ */
+
 let utils = require("../utils/utils");
 let {last, longs, remove, swap} = utils;
 
