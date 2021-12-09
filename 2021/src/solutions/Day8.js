@@ -43,9 +43,9 @@ function main() {
 function part1(strings) {
     let result = 0;
     for (let line of strings) {
-        let [patterns, output] = line.split('|').map(v => v.trim());
+        let [_, output] = line.split('|').map(v => v.trim());
         for (let o of output.split(' ').map(v => v.trim())) {
-            if ([2,3,4,7].indexOf(o.length) > -1) {
+            if ([2, 3, 4, 7].indexOf(o.length) > -1) {
                 result += 1;
             }
         }
@@ -54,197 +54,143 @@ function part1(strings) {
     return result;
 }
 
-function fix(s) {
-    return s.split('').sort();
-}
-
-function setOrFilter(a, els) {
-    if (a.length === 0) {
-        return els;
+function setOrIntersect(a, els) {
+    if (!a || a.length === 0) {
+        return els.split('');
     }
     return a.filter(v => els.indexOf(v) > -1)
 }
 
-function part2(strings) {
-    let input = strings.map(line => {
-        let [patterns, output] = line.split('|').map(v => v.trim());
-        return {patterns: patterns.split(' ').map(v => v.trim()).filter(v => v), output: output.split(' ').map(v => v.trim()).filter(v => v)};
-    });
-    let result = 0;
-    for (let {patterns, output} of input) {
-        let segments = {
-            t: [],
-            tl: [],
-            tr: [],
-            m: [],
-            bl: [],
-            br: [],
-            b: [],
-        };
-        let digits = [];
-        let badDigits = [];
-        for (let pattern of patterns) {
-            pattern = fix(pattern);
-            let d = pattern;
-            if (pattern.length === 2) {
-                digits[1] = d;
-                segments.tr = setOrFilter(segments.tr, pattern);
-                segments.br = setOrFilter(segments.br, pattern);
-            } else if (pattern.length === 3) {
-                digits[7] = d;
-                segments.t = setOrFilter(segments.t, pattern);
-                segments.tr = setOrFilter(segments.tr, pattern);
-                segments.br = setOrFilter(segments.br, pattern);
-            } else if (pattern.length === 4) {
-                digits[4] = d;
-                segments.tl = setOrFilter(segments.tl, pattern);
-                segments.tr = setOrFilter(segments.tr, pattern);
-                segments.m = setOrFilter(segments.m, pattern);
-                segments.br = setOrFilter(segments.br, pattern);
-            } else if (pattern.length === 7) {
-                digits[8] = d;
-                segments.t = setOrFilter(segments.t, pattern);
-                segments.tl = setOrFilter(segments.tl, pattern);
-                segments.tr = setOrFilter(segments.tr, pattern);
-                segments.m = setOrFilter(segments.m, pattern);
-                segments.br = setOrFilter(segments.br, pattern);
-                segments.bl = setOrFilter(segments.bl, pattern);
-                segments.b = setOrFilter(segments.b, pattern);
-            } else if (pattern.length === 6) {
-                // 0, 6, 9
-                badDigits[0] = badDigits[0] || [];
-                badDigits[0].push(d)
-                badDigits[6] = badDigits[6] || [];
-                badDigits[6].push(d)
-                badDigits[9] = badDigits[9] || [];
-                badDigits[9].push(d)
-                segments.t = setOrFilter(segments.t, pattern);
-                segments.tl = setOrFilter(segments.tl, pattern);
-                segments.b = setOrFilter(segments.b, pattern);
-            } else if (pattern.length === 5) {
-                // 2, 3, 5
-                badDigits[2] = badDigits[2] || [];
-                badDigits[2].push(d)
-                badDigits[3] = badDigits[3] || [];
-                badDigits[3].push(d)
-                badDigits[5] = badDigits[5] || [];
-                badDigits[5].push(d)
-                segments.t = setOrFilter(segments.t, pattern);
-                segments.m = setOrFilter(segments.m, pattern);
-                segments.b = setOrFilter(segments.b, pattern);
+function isPlaced(segment) {
+    return segment.length === 1;
+}
+
+let digits = [
+    s => [s.t, s.tl, s.tr, s.bl, s.br, s.b],
+    s => [s.tr, s.br],
+    s => [s.t, s.tr, s.m, s.bl, s.b],
+    s => [s.t, s.tr, s.m, s.br, s.b],
+    s => [s.tl, s.tr, s.m, s.br],
+    s => [s.t, s.tl, s.m, s.br, s.b],
+    s => [s.t, s.tl, s.m, s.bl, s.br, s.b],
+    s => [s.t, s.tr, s.br],
+    s => [s.t, s.tl, s.tr, s.m, s.bl, s.br, s.b],
+    s => [s.t, s.tl, s.tr, s.m, s.br, s.b],
+].map(v => s => v(s).sort().join(''));
+
+function buildInitialSegments(patterns) {
+    let segments = {};
+    let possibleSixes = [];
+    for (let pattern of patterns) {
+        switch (pattern.length) {
+            case 2: // 1
+                segments.tr = setOrIntersect(segments.tr, pattern);
+                segments.br = setOrIntersect(segments.br, pattern);
+                break;
+            case 3: // 7
+                segments.t = setOrIntersect(segments.t, pattern);
+                segments.tr = setOrIntersect(segments.tr, pattern);
+                segments.br = setOrIntersect(segments.br, pattern);
+                break;
+            case 4: // 4
+                segments.tl = setOrIntersect(segments.tl, pattern);
+                segments.tr = setOrIntersect(segments.tr, pattern);
+                segments.m = setOrIntersect(segments.m, pattern);
+                segments.br = setOrIntersect(segments.br, pattern);
+                break;
+            case 7: // 8
+                segments.t = setOrIntersect(segments.t, pattern);
+                segments.tl = setOrIntersect(segments.tl, pattern);
+                segments.tr = setOrIntersect(segments.tr, pattern);
+                segments.m = setOrIntersect(segments.m, pattern);
+                segments.br = setOrIntersect(segments.br, pattern);
+                segments.bl = setOrIntersect(segments.bl, pattern);
+                segments.b = setOrIntersect(segments.b, pattern);
+                break;
+            case 6: // 0, 6, 9
+                possibleSixes.push(pattern);
+                segments.t = setOrIntersect(segments.t, pattern);
+                segments.tl = setOrIntersect(segments.tl, pattern);
+                segments.b = setOrIntersect(segments.b, pattern);
+                break;
+            case 5: // 2, 3, 5
+                segments.t = setOrIntersect(segments.t, pattern);
+                segments.m = setOrIntersect(segments.m, pattern);
+                segments.b = setOrIntersect(segments.b, pattern);
+                break;
+        }
+    }
+    return [segments, possibleSixes];
+}
+
+function placeUniqueSegmentValues(segments) {
+    let map = Object.fromEntries(Object.values(segments).flat().map(c => [c, []]));
+    for (let pos in segments) {
+        for (let c of segments[pos]) {
+            map[c].push(pos);
+        }
+    }
+    let result = false;
+    for (let c in map) {
+        let positions = map[c];
+        if (positions.length > 1) { // not unique
+            continue;
+        }
+        let [pos] = positions;
+        if (isPlaced(segments[pos])) {
+            continue;
+        }
+        segments[pos] = [c];
+        // remove from other segments
+        for (let other in segments) {
+            if (other === pos) {
+                continue;
+            }
+            if (segments[other].indexOf(c) > -1) {
+                segments[other] = segments[other].filter(v => v !== c);
             }
         }
-        outer: while (true) {
-            // console.log('1', segments)
-            for (let pos in segments) {
-                if (segments[pos].length === 1) {
-                    let segmentElement = segments[pos][0];
-                    for (let other in segments) {
-                        if (other !== pos && segments[other].indexOf(segmentElement) > -1) {
-                            segments[other] = segments[other].filter(v => v !== segmentElement);
-                            // console.log('found unique: ', segmentElement)
-                            continue outer;
-                        }
-                    }
-                }
+        result = true;
+    }
+    return result;
+}
+
+function placeBottomRight(possibleSixes, segments) {
+    let segmentsInSix = [segments.t, segments.tl, segments.m, segments.bl, segments.b];
+    if (isPlaced(segments.br) || segmentsInSix.some(s => !isPlaced(s))) {
+        return false;
+    }
+    let expectedInSix = segmentsInSix.map(v => v[0]);
+    let sixes = possibleSixes.filter(possible6 => {
+        return expectedInSix.every(v => possible6.indexOf(v) > -1);
+    });
+    if (sixes.length > 1) {
+        console.log(sixes);
+        throw `unexpected sixes length: ${sixes.length}`;
+    }
+    segments.br = sixes[0].split('').filter(v => expectedInSix.indexOf(v) === -1);
+    return true;
+}
+
+function part2(strings) {
+    let result = 0;
+    for (let line of strings) {
+        let [patterns, output] = line.split(' | ').map(v => v.split(' ').map(s => s.split('').sort().join('')));
+        let [segments, possibleSixes] = buildInitialSegments(patterns);
+        while (true) {
+            if (placeUniqueSegmentValues(segments)) {
+                continue;
             }
-            // console.log('2', segments)
-            let map = {};
-            for (let pos in segments) {
-                for (let el of segments[pos]) {
-                    if (!map[el]) {
-                        map[el] = [];
-                    }
-                    map[el].push(pos);
-                }
-            }
-            // console.log('2', map)
-            for (let el in map) {
-                if (map[el].length === 1 && segments[map[el][0]].length > 1) {
-                    segments[map[el][0]] = [ el ];
-                    // console.log('found unique2 :', el)
-                    continue outer;
-                }
-            }
-            if (digits[4] && segments.m.length === 1 && segments.tl.length > 1) {
-                let m = segments.m[0];
-                segments.tl = digits[4].filter(v4 => digits[1].indexOf(v4) === -1).filter(v => v !== m);
-                // console.log('4', segments)
-                continue outer;
-            }
-            if (segments.br.length > 1 && segments.t.length === 1 && segments.tl.length === 1 && segments.m.length === 1 && segments.bl.length === 1 && segments.b.length === 1) {
-                let expectedIn6 = [segments.t[0], segments.tl[0], segments.m[0], segments.bl[0], segments.b[0]];
-                let sixes = badDigits[6].filter(possible6 => {
-                    return expectedIn6.every(v => possible6.indexOf(v) > -1);
-                });
-                if (sixes.length > 1) {
-                    console.log(sixes)
-                    throw `unexpected sixes length: ${sixes.length}`;
-                }
-                segments.br = sixes[0].filter(v => expectedIn6.indexOf(v) === -1);
-                // console.log('6', segments)
-                continue outer;
-            }
-            if (segments.br.length > 1 && segments.t.length === 1 && segments.tl.length === 1 && segments.m.length === 1 && segments.br.length === 1 && segments.b.length === 1) {
-                let expectedIn9 = [segments.t[0], segments.tl[0], segments.m[0], segments.br[0], segments.b[0]];
-                let nines = badDigits[9].filter(possible9 => {
-                    return expectedIn9.every(v => possible9.indexOf(v) > -1);
-                });
-                if (nines.length > 1) {
-                    console.log(nines)
-                    throw `unexpected nines length: ${nines.length}`;
-                }
-                segments.bl = nines[0].filter(v => expectedIn9.indexOf(v) === -1);
-                // console.log('9', segments)
-                continue outer;
-            }
-            if (segments.m.length > 1 && segments.t.length === 1 && segments.tl.length === 1 && segments.tr.length === 1 && segments.bl.length === 1 && segments.br.length === 1 && segments.b.length === 1) {
-                let expectedIn0 = [segments.t[0], segments.tl[0], segments.tr[0], segments.bl[0], segments.br[0], segments.b[0]];
-                segments.bl = digits[8].filter(v => expectedIn0.indexOf(v) === -1);
-                // console.log('0-8', segments)
-                continue outer;
+            if (placeBottomRight(possibleSixes, segments)) {
+                continue;
             }
             break;
         }
-        // console.log(segments)
-        for (let pos in segments) {
-            if (segments[pos].length !== 1) {
-                console.log('unexpected segment length', segments[pos])
-                throw `unexpected segments[${pos}] length: ${segments[pos].length}`;
-            }
-            segments[pos] = segments[pos][0];
-        }
-        // console.log(segments);
-        digits[0] = [segments.t, segments.tl, segments.tr, segments.bl, segments.br, segments.b];
-        digits[1] = [segments.tr, segments.br];
-        digits[2] = [segments.t, segments.tr, segments.m, segments.bl, segments.b];
-        digits[3] = [segments.t, segments.tr, segments.m, segments.br, segments.b];
-        digits[4] = [segments.tl, segments.tr, segments.m, segments.br];
-        digits[5] = [segments.t, segments.tl, segments.m, segments.br, segments.b];
-        digits[6] = [segments.t, segments.tl, segments.m, segments.bl, segments.br, segments.b];
-        digits[7] = [segments.t, segments.tr, segments.br];
-        digits[8] = [segments.t, segments.tl, segments.tr, segments.m, segments.bl, segments.br, segments.b];
-        digits[9] = [segments.t, segments.tl, segments.tr, segments.m, segments.br, segments.b];
-        for (let i = 0; i < digits.length; i++) {
-            digits[i] = digits[i].sort().join('');
-        }
-        // console.log(digits)
-        let outputNumber = output.map(v => {
-            let seq = fix(v).join('');
-            let result = digits.indexOf(seq);
-                if (result === -1) {
-                    console.log('not found digit', v, seq, digits)
-                    throw seq;
-                }
-                return result;
-            })
-            .reduce((r, d) => {
-                return r*10 + d;
-            }, 0)
-        // console.log(outputNumber)
-        result += outputNumber
+        let solutionSegments = Object.fromEntries(Object.entries(segments).map(([s, v]) => [s, v[0]]));
+        let solutionDigits = Object.fromEntries(digits.map((d, i) => [d(solutionSegments), i]));
+        result += output.reduce((r, d) => r * 10 + solutionDigits[d], 0);
     }
-
     return result;
 }
+
 main();
