@@ -9,14 +9,14 @@ function main() {
     `);
 
     let expected1_1 =
-    console.log(`Sample: ${part1(sample1)} (expected: ${expected1_1})`)
-    console.log(`Result: ${part1(input)}`)
+    console.log(`Sample: ${part1(sample1)} (expected: ${expected1_1})`);
+    console.log(`Result: ${part1(input)}`);
 
     console.log("---")
 
     // let expected1_2 =
-    // console.log(`Sample: ${part2(sample1)} (expected: ${expected1_2})`)
-    // console.log(`Result: ${part2(input)}`)
+    // console.log(`Sample: ${part2(sample1)} (expected: ${expected1_2})`);
+    // console.log(`Result: ${part2(input)}`);
 }
 
 function part1(strings) {
