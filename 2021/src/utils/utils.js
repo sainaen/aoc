@@ -79,12 +79,44 @@ function sampleGroup(text) {
 }
 exports.sampleGroup = sampleGroup;
 
-function longs(strs, {base = 10, split = null} = {}) {
-    if (split) {
+function longs(strs, {base = 10, split = null, lsplit = null} = {}) {
+    if (split != null) {
         strs = strs.split(split);
     }
-    return strs.map(v => v.trim())
-               .filter(v => v)
-               .map(v => parseInt(v, base));
+    if (lsplit != null) {
+        return strs.map(row => row.split(lsplit).filter(v => v).map(v => parseInt(v, base)));
+    }
+    return strs.map(v => v.trim()).filter(v => v).map(v => parseInt(v, base));
 }
 exports.longs = longs;
+
+function neighbors(field, y, x, {diagonals = false} = {}) {
+    let res = [];
+    if (y > 0) {
+        res.push([y - 1, x]);
+        if (diagonals && x > 0) {
+            res.push([y - 1, x - 1]);
+        }
+        if (diagonals && x < field[y].length - 1) {
+            res.push([y - 1, x + 1]);
+        }
+    }
+    if (y < field.length - 1) {
+        res.push([y + 1, x]);
+        if (diagonals && x > 0) {
+            res.push([y + 1, x - 1]);
+        }
+        if (diagonals && x < field[y].length - 1) {
+            res.push([y + 1, x + 1]);
+        }
+    }
+    if (x > 0) {
+        res.push([y, x - 1]);
+    }
+    if (x < field[y].length - 1) {
+        res.push([y, x + 1]);
+    }
+
+    return res;
+}
+exports.neighbors = neighbors;

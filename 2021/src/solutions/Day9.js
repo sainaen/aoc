@@ -30,32 +30,25 @@ function main() {
     console.log(`Result: ${part2(input)}`)
 }
 
-function isLowPoint(field, i, j) {
-    let v = field[i][j];
+function isLowPoint(field, y, x) {
+    let v = field[y][x];
     let result = true;
-    if (i !== 0) {
-        result = result && field[i-1][j] > v;
-    }
-    if (j !== 0) {
-        result = result && field[i][j-1] > v;
-    }
-    if (j < field[i].length - 1) {
-        result = result && field[i][j+1] > v;
-    }
-    if (i < field.length - 1) {
-        result = result && field[i+1][j] > v;
+    for (let [ny, nx] of utils.neighbors(field, y, x)) {
+        if (field[ny][nx] < v) {
+            result = false;
+        }
     }
     return result;
 }
 
 function part1(strings) {
-    let longs = strings.map(v => v.split('').map(s => parseInt(s, 10)))
+    let field = longs(strings, {lsplit: ''});
 
     let result = 0;
-    for (let i = 0; i < longs.length; i++) {
-        for (let j = 0; j < longs[i].length; j++) {
-            if (isLowPoint(longs, i, j)) {
-                result += longs[i][j] + 1;
+    for (let i = 0; i < field.length; i++) {
+        for (let j = 0; j < field[i].length; j++) {
+            if (isLowPoint(field, i, j)) {
+                result += field[i][j] + 1;
             }
         }
     }
@@ -93,18 +86,18 @@ function discoverBasin(field, i, j, visited=[]) {
 }
 
 function part2(strings) {
-    let longs = strings.map(v => v.split('').map(s => parseInt(s, 10)))
+    let field = longs(strings, {lsplit: ''});
 
     let basins = [];
-    for (let i = 0; i < longs.length; i++) {
-        for (let j = 0; j < longs[i].length; j++) {
-            if (isLowPoint(longs, i, j)) {
+    for (let i = 0; i < field.length; i++) {
+        for (let j = 0; j < field[i].length; j++) {
+            if (isLowPoint(field, i, j)) {
                 basins.push({i, j})
             }
         }
     }
 
-    let result = basins.map(b => discoverBasin(longs, b.i, b.j)).sort((a, b) => b - a).slice(0, 3).reduce((a, b) => a * b);
+    let result = basins.map(b => discoverBasin(field, b.i, b.j)).sort((a, b) => b - a).slice(0, 3).reduce((a, b) => a * b);
 
     return result;
 }

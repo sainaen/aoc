@@ -35,36 +35,6 @@ function main() {
     console.log(`Result: ${part2(input)}`);
 }
 
-function neighbors(field, y, x) {
-    let res = [];
-    if (y > 0) {
-        res.push([y - 1, x]);
-        if (x > 0) {
-            res.push([y - 1, x - 1]);
-        }
-        if (x < field[y].length - 1) {
-            res.push([y - 1, x + 1]);
-        }
-    }
-    if (y < field.length - 1) {
-        res.push([y + 1, x]);
-        if (x > 0) {
-            res.push([y + 1, x - 1]);
-        }
-        if (x < field[y].length - 1) {
-            res.push([y + 1, x + 1]);
-        }
-    }
-    if (x > 0) {
-        res.push([y, x - 1]);
-    }
-    if (x < field[y].length - 1) {
-        res.push([y, x + 1]);
-    }
-
-    return res;
-}
-
 function step(field) {
     let flashed = field.map(v => v.map(s => false));
     let critical = []
@@ -79,7 +49,7 @@ function step(field) {
     }
     while (critical.length > 0) {
         let [y, x] = critical.pop();
-        for (let [ny, nx] of neighbors(field, y, x)) {
+        for (let [ny, nx] of utils.neighbors(field, y, x, {diagonals: true})) {
             field[ny][nx] += 1;
             if (!flashed[ny][nx] && field[ny][nx] > 9) {
                 flashed[ny][nx] = true;
@@ -98,25 +68,25 @@ function step(field) {
 }
 
 function part1(strings) {
-    let longs = strings.map(line => line.split('').filter(v => v).map(v => parseInt(v.trim(), 10)));
+    let field = longs(strings, {lsplit: ''});
 
     let result = 0;
     for (let i = 0; i < 100; i++) {
-        result += step(longs);
+        result += step(field);
     }
 
     return result;
 }
 
 function part2(strings) {
-    let longs = strings.map(line => line.split('').filter(v => v).map(v => parseInt(v.trim(), 10)));
-    let len = longs.map(row => row.length).reduce((a, b) => a + b, 0);
+    let field = longs(strings, {lsplit: ''});
+    let len = field.map(row => row.length).reduce((a, b) => a + b, 0);
 
     let result = 0;
-    for (let i = 0; i < 10_000_000; i++) {
-        let count = step(longs);
+    for (let i = 1; i < 10_000_000; i++) {
+        let count = step(field);
         if (count === len) {
-            result = i + 1;
+            result = i;
             break;
         }
     }
