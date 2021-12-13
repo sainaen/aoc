@@ -25,6 +25,7 @@ function run() {
   echo " "
 }
 
+run
 while true ; do
   inotifywait -qq --event modify "$sol_js" "src/utils/utils.js"
   sleep 0.1 # solves weird '/usr/bin/env: bad interpreter: Text file busy' error
