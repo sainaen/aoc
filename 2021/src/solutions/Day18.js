@@ -47,8 +47,6 @@ function main() {
     console.log(`Result: ${part2(input)}`);
 }
 
-let debug = false;
-
 function parse(s) {
     return JSON.parse(s);
 }
@@ -78,7 +76,7 @@ function set(n, path, v) {
     cur[last(path)] = v;
 }
 
-function findRegularToLeft(n, path) {
+function findFirstRegular(n, path, dir) {
     function _traverse(p) {
         let cur = get(n, p);
         if (cur == null) {
@@ -89,60 +87,24 @@ function findRegularToLeft(n, path) {
             }
         }
         if (!Array.isArray(cur)) {
-            return {path: p, v: cur};
+            return [p, cur];
         }
         let result = null;
         for (let i = 0; i < cur.length; i++) {
             result = _traverse([...p, i]);
+            if (result != null && returnOnFirstTraverseFind) {
+                return result;
+            }
         }
         return result;
     }
 
     let curPath = [...path];
+    let returnOnFirstTraverseFind = dir === 'right';
+    let d = dir === 'left' ? -1 : 1;
     while (curPath.length > 0) {
-        debug && console.log('left', JSON.stringify(curPath));
         let l = curPath.length - 1;
-        curPath[l] -= 1;
-        if (curPath[l] < 0) {
-            curPath = curPath.slice(0, l);
-            continue;
-        }
-        let result = _traverse(curPath);
-        if (result != null) {
-            return result;
-        }
-    }
-
-    return null;
-}
-
-function findRegularToRight(n, path) {
-    function _traverse(p) {
-        let cur = get(n, p);
-        if (cur == null) {
-            if (p.length > 1) {
-                return _traverse(p.slice(0, p.length - 1));
-            } else {
-                return null;
-            }
-        }
-        if (!Array.isArray(cur)) {
-            return {path: p, v: cur};
-        }
-        for (let i = 0; i < cur.length; i++) {
-            let result = _traverse([...p, i]);
-            if (result != null) {
-                return result;
-            }
-        }
-        return null;
-    }
-
-    let curPath = [...path];
-    while (curPath.length > 0) {
-        debug && console.log('right', JSON.stringify(curPath));
-        let l = curPath.length - 1;
-        curPath[l] += 1;
+        curPath[l] += d;
         if (get(n, curPath) == null) {
             curPath = curPath.slice(0, l);
             continue;
@@ -152,7 +114,6 @@ function findRegularToRight(n, path) {
             return result;
         }
     }
-
     return null;
 }
 
@@ -161,80 +122,56 @@ function reduceExplode(n, path=[]) {
     if (!Array.isArray(cur)) {
         return false;
     }
-
     if (path.length === 4) {
-        debug && console.log('exploded at', path, JSON.stringify(cur), JSON.stringify(n));
-        let left = findRegularToLeft(n, path);
+        let left = findFirstRegular(n, path, 'left');
         if (left) {
-            debug && console.log('exploding: found l', left, JSON.stringify(n));
-            set(n, left.path, left.v + cur[0]);
+            set(n, left[0], left[1] + cur[0]);
         }
-        let right = findRegularToRight(n, path);
+        let right = findFirstRegular(n, path, 'right');
         if (right) {
-            debug && console.log('exploding: found r', right, JSON.stringify(n));
-            set(n, right.path, right.v + cur[1]);
+            set(n, right[0], right[1] + cur[1]);
         }
         set(n, path, 0);
-        debug && console.log('after exploding', path, JSON.stringify(n));
         return true;
     }
-
     for (let i = 0; i < cur.length; i++) {
-        let changed = reduceExplode(n, [...path, i]);
-        if (changed) {
+        if (reduceExplode(n, [...path, i])) {
             return true;
         }
     }
-
     return false;
 }
 
 function reduceSplit(n, path=[]) {
     let cur = get(n, path);
     if (!Array.isArray(cur)) {
-        let [changed, newV] = reduceRegularNumber(cur);
-        if (changed) {
-            set(n, path, newV)
+        if (cur < 10) {
+            return false;
         }
-        debug && console.log('reduced number at', path, changed, newV, JSON.stringify(n));
-        return changed;
+        let left = Math.floor(cur / 2);
+        set(n, path, [left, cur - left]);
+        return true;
     }
-
     for (let i = 0; i < cur.length; i++) {
-        let changed = reduceSplit(n, [...path, i]);
-        if (changed) {
+        if (reduceSplit(n, [...path, i])) {
             return true;
         }
     }
-
     return false;
 }
 
 function reduce(n) {
-    let reduced = true;
-    while (reduced) {
-        reduced = false;
-        if (reduceExplode(n)) {
-            reduced = true;
-        } else if (reduceSplit(n)) {
-            reduced = true;
-        }
+    while (reduceExplode(n) || reduceSplit(n)) {
+        // brrr
     }
     return n;
 }
 
-function pair(n, other) {
-    if (n == null) {
-        return other;
-    }
-    return [n, other];
-}
-
 function add(a, b) {
     if (a == null) {
-        return reduce(b);
+        return b;
     }
-    return reduce(pair(reduce(a), b));
+    return reduce([reduce(a), b]);
 }
 
 function magnitude(n, path=[]) {
@@ -242,11 +179,7 @@ function magnitude(n, path=[]) {
     if (!Array.isArray(cur)) {
         return cur;
     }
-
-    let left = magnitude(n, [...path, 0]);
-    let right = magnitude(n, [...path, 1]);
-
-    return left * 3 + right * 2;
+    return magnitude(n, [...path, 0]) * 3 + magnitude(n, [...path, 1]) * 2;
 }
 
 function part1(strings) {
@@ -254,16 +187,15 @@ function part1(strings) {
     for (let s of strings) {
         input = add(input, parse(s));
     }
-    // console.log(JSON.stringify(input))
-
     return magnitude(input);
 }
 
-function deepClone(a) {
-    return JSON.parse(JSON.stringify(a));
-}
 
 function maxMagnitudeOfSum(a, b) {
+    function deepClone(n) {
+        return JSON.parse(JSON.stringify(n));
+    }
+
     let m1 = magnitude(add(deepClone(a), deepClone(b)));
     let m2 = magnitude(add(deepClone(b), deepClone(a)));
     return Math.max(m1, m2);
@@ -271,7 +203,6 @@ function maxMagnitudeOfSum(a, b) {
 
 function part2(strings) {
     let numbers = strings.map(s => parse(s));
-
     let result = -Infinity;
     for (let i = 0; i < numbers.length - 1; i++) {
         let a = numbers[i]
@@ -280,7 +211,6 @@ function part2(strings) {
             result = Math.max(result, maxMagnitudeOfSum(a, b));
         }
     }
-
     return result;
 }
 
