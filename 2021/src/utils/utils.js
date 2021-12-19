@@ -75,7 +75,7 @@ function sample(text, shouldCleanup = true) {
 exports.sample = sample;
 
 function sampleGroup(text) {
-    return splitLinesByEmpty(text.split("\n"));
+    return splitLinesByEmpty(sample(text, false));
 }
 exports.sampleGroup = sampleGroup;
 
