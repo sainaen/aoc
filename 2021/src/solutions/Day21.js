@@ -43,16 +43,10 @@ function rollDie() {
     return result;
 }
 
-function done(scores) {
-    return Object.values(scores).some(v => v >= 1000);
-}
-
 function newPos(curPos, move) {
     let result = curPos + move;
-    while (result > 10) {
-        result -= 10;
-    }
-    return result;
+    let mod = result % 10;
+    return mod === 0 ? 10 : mod;
 }
 
 function part1(startingPositions) {
@@ -66,7 +60,7 @@ function part1(startingPositions) {
             let move = rollDie() + rollDie() + rollDie();
             positions[player] = newPos(positions[player], move);
             scores[player] += positions[player];
-            if (done(scores)) {
+            if (Object.values(scores).some(v => v >= 1000)) {
                 break outer;
             }
         }
@@ -87,23 +81,19 @@ let diracDieMoves = (() => {
     return result;
 })();
 
-function toKey(state) {
-    if (typeof state === "string") {
-        return state;
-    }
-    return JSON.stringify(state);
-}
-
 function part2(startingPositions) {
     let positions = Object.values(startingPositions);
 
     let maxScore = 21;
     let maxPos = 10;
 
-    let universes = new Map();
+    let universes = [];
     for (let p1Score = maxScore - 1; p1Score >= 0; p1Score--) {
+        universes[p1Score] = [];
         for (let p2Score = maxScore - 1; p2Score >= 0; p2Score--) {
+            universes[p1Score][p2Score] = [];
             for (let p1Pos = 1; p1Pos <= maxPos; p1Pos++) {
+                universes[p1Score][p2Score][p1Pos] = [];
                 for (let p2Pos = 1; p2Pos <= maxPos; p2Pos++) {
                     let currentUniverse = {p1: 0, p2: 0};
                     for (let p1Move of diracDieMoves) {
@@ -120,24 +110,18 @@ function part2(startingPositions) {
                                 currentUniverse.p2 += 1;
                                 continue;
                             }
-                            let futureUniverse = universes.get(toKey({
-                                p1: [p1NextPos, p1NextScore],
-                                p2: [p2NextPos, p2NextScore]
-                            }));
-                            currentUniverse.p1 += futureUniverse.p1 || 0;
-                            currentUniverse.p2 += futureUniverse.p2 || 0;
+                            let {p1: futureP1, p2: futureP2} = universes[p1NextScore][p2NextScore][p1NextPos][p2NextPos];
+                            currentUniverse.p1 += futureP1 || 0;
+                            currentUniverse.p2 += futureP2 || 0;
                         }
                     }
-                    universes.set(toKey({p1: [p1Pos, p1Score], p2: [p2Pos, p2Score]}), currentUniverse);
+                    universes[p1Score][p2Score][p1Pos][p2Pos] = currentUniverse;
                 }
             }
         }
     }
-    let result = universes.get(toKey({
-        p1: [positions[0], 0],
-        p2: [positions[1], 0]
-    }));
-    return result.p1 > result.p2 ? result.p1 : result.p2;
+    let {p1, p2} = universes[0][0][positions[0]][positions[1]];
+    return Math.max(p1, p2);
 }
 
 main();
