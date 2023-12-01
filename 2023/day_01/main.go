@@ -41,14 +41,14 @@ func part1(in input) {
 	for _, l := range in.lines {
 		var first int
 		for j := 0; j < len(l); j++ {
-			if d := digitAt(l, j); d > -1 {
+			if d := digitAt(l, j, false); d > -1 {
 				first = d
 				break
 			}
 		}
 		var last int
 		for j := len(l) - 1; j >= 0; j-- {
-			if d := digitAt(l, j); d > -1 {
+			if d := digitAt(l, j, false); d > -1 {
 				last = d
 				break
 			}
@@ -60,52 +60,18 @@ func part1(in input) {
 	fmt.Printf("part 1 (%s): %v\n", in.kind, result)
 }
 
-func digitAt(l string, i int) int {
+func digitAt(l string, i int, part2 bool) int {
 	if '0' <= l[i] && l[i] <= '9' {
 		return int(l[i] - '0')
 	}
-	return -1
-}
-
-func digitAt2(l string, i int) int {
-	if '0' <= l[i] && l[i] <= '9' {
-		return int(l[i] - '0')
-	}
-	if (len(l) - i) < 3 {
+	if !part2 {
 		return -1
 	}
-	if l[i:i+3] == "one" {
-		return 1
-	}
-	if l[i:i+3] == "two" {
-		return 2
-	}
-	if l[i:i+3] == "six" {
-		return 6
-	}
-	if (len(l) - i) < 4 {
-		return -1
-	}
-	if l[i:i+4] == "four" {
-		return 4
-	}
-	if l[i:i+4] == "five" {
-		return 5
-	}
-	if l[i:i+4] == "nine" {
-		return 9
-	}
-	if (len(l) - i) < 5 {
-		return -1
-	}
-	if l[i:i+5] == "three" {
-		return 3
-	}
-	if l[i:i+5] == "seven" {
-		return 7
-	}
-	if l[i:i+5] == "eight" {
-		return 8
+	s := l[i:]
+	for j, d := range []string{"one", "two", "three", "four", "five", "six", "seven", "eight", "nine"} {
+		if strings.HasPrefix(s, d) {
+			return j + 1
+		}
 	}
 	return -1
 }
@@ -115,14 +81,14 @@ func part2(in input) {
 	for _, l := range in.lines {
 		var first int
 		for j := 0; j < len(l); j++ {
-			if d := digitAt2(l, j); d > -1 {
+			if d := digitAt(l, j, true); d > -1 {
 				first = d
 				break
 			}
 		}
 		var last int
 		for j := len(l) - 1; j >= 0; j-- {
-			if d := digitAt2(l, j); d > -1 {
+			if d := digitAt(l, j, true); d > -1 {
 				last = d
 				break
 			}
