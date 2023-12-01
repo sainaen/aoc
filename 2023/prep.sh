@@ -2,6 +2,9 @@
 set -eu
 set -o pipefail
 
+# shellcheck disable=SC1090
+source ~/.config/aoc/auth.sh
+
 if [ "$#" != "1" ] ; then
   echo >&2 "Expected 1 argument, got $#: <$*>"
   echo >&2 " "
@@ -10,10 +13,10 @@ if [ "$#" != "1" ] ; then
 fi
 
 day="$1"
-day_dir=$(printf "day_%02d" "$day")
-mkdir -p "${day_dir}"
-
+day_dir="2023/$(printf "day_%02d" "$day")"
 input_file="${day_dir}/input.txt"
+
+mkdir -p "${day_dir}"
 
 echo "Input:"
 curl --silent --show-error --location --cookie "session=${AOC_SESSION?}" "https://adventofcode.com/2023/day/${day}/input" -o "${input_file}"
@@ -65,7 +68,7 @@ type input struct {
 }
 
 func fullInput() input {
-	file, err := os.Open("2023/${input_file}")
+	file, err := os.Open("${input_file}")
 	if err != nil {
 		log.Fatal("Couldn't open the input file", err)
 	}

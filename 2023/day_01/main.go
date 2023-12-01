@@ -16,7 +16,7 @@ import (
 */
 // @formatter:on
 func main() {
-	fmt.Println("Day day_01")
+	fmt.Println("Day 1")
 
 	fmt.Println("-------------")
 	part1(sample(`1abc2
