@@ -49,9 +49,9 @@ func main() {
 	part1(sample(\`\`))
 	part1(fullInput())
 
-	//fmt.Println("-------------")
-	//part2(sample(\`\`))
-	//part2(fullInput())
+	fmt.Println("-------------")
+	part2(sample(\`\`))
+	part2(fullInput())
 }
 
 func part1(in input) {
@@ -60,6 +60,14 @@ func part1(in input) {
 		result += len(l)
 	}
 	fmt.Printf("part 1 (%s): %v\n", in.kind, result)
+}
+
+func part2(in input) {
+	result := 0
+	for _, l := range in.lines {
+		result += len(l)
+	}
+	fmt.Printf("part 2 (%s): %v\n", in.kind, result)
 }
 
 type input struct {
