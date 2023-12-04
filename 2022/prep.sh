@@ -26,15 +26,13 @@ echo "(total lines: $(wc -l "${input_file}" | cut -d' ' -f1))"
 
 sol_file="${day_dir}/main.go"
 if [ ! -f "${sol_file}" ] ; then
-cat <<-EOF > "${sol_file}"
+  cp "2022/util.go" "${day_dir}"
+
+  cat <<-EOF > "${sol_file}"
 package main
 
 import (
-	"bufio"
 	"fmt"
-	"log"
-	"os"
-	"strings"
 )
 
 // @formatter:off
@@ -44,14 +42,16 @@ import (
 // @formatter:on
 func main() {
 	fmt.Println("Day ${day}")
+	inputFile := "${input_file}"
+	sampleLines := \`\`
 
 	fmt.Println("-------------")
-	part1(sample(\`\`))
-	part1(fullInput())
+	part1(sample(sampleLines))
+	part1(fullInput(inputFile))
 
 	fmt.Println("-------------")
-	part2(sample(\`\`))
-	part2(fullInput())
+	part2(sample(sampleLines))
+	part2(fullInput(inputFile))
 }
 
 func part1(in input) {
@@ -68,32 +68,6 @@ func part2(in input) {
 		result += len(l)
 	}
 	fmt.Printf("part 2 (%s): %v\n", in.kind, result)
-}
-
-type input struct {
-	kind  string
-	lines []string
-}
-
-func fullInput() input {
-	file, err := os.Open("${input_file}")
-	if err != nil {
-		log.Fatal("Couldn't open the input file", err)
-	}
-	defer file.Close()
-	return input{kind: "input", lines: lines(bufio.NewScanner(file))}
-}
-
-func sample(s string) input {
-	return input{kind: "sample", lines: lines(bufio.NewScanner(strings.NewReader(s)))}
-}
-
-func lines(s *bufio.Scanner) []string {
-	var result []string
-	for s.Scan() {
-		result = append(result, strings.TrimSpace(s.Text()))
-	}
-	return result
 }
 EOF
 
