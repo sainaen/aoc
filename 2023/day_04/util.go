@@ -2,7 +2,7 @@ package main
 
 import (
 	"bufio"
-	"log"
+	"fmt"
 	"os"
 	"strconv"
 	"strings"
@@ -14,10 +14,7 @@ type input struct {
 }
 
 func fullInput(p string) input {
-	file, err := os.Open(p)
-	if err != nil {
-		log.Fatal("Couldn't open the input file", err)
-	}
+	file := noErr(os.Open(p))
 	defer file.Close()
 	return input{kind: "input", lines: lines(bufio.NewScanner(file))}
 }
@@ -46,11 +43,7 @@ func parseNumsWithSep(s, sep string) []int {
 		if len(nws) == 0 {
 			continue
 		}
-		v, err := strconv.Atoi(nws)
-		if err != nil {
-			log.Fatalf("Couldn't parse %v as number: %v", nws, err)
-		}
-		result = append(result, v)
+		result = append(result, noErr(strconv.Atoi(nws)))
 	}
 	return result
 }
@@ -61,4 +54,12 @@ func toMap[T comparable](ts []T) map[T]bool {
 		result[t] = false
 	}
 	return result
+}
+
+func noErr[T any](t T, err error) T {
+	if err != nil {
+		fmt.Printf("got an error: %v\n", err)
+		os.Exit(1)
+	}
+	return t
 }
