@@ -63,3 +63,20 @@ func noErr[T any](t T, err error) T {
 	}
 	return t
 }
+
+func gcd(a, b int64) int64 {
+	for b != 0 {
+		t := b
+		b = a % b
+		a = t
+	}
+	return a
+}
+
+func lcm(ints ...int64) int64 {
+	result := ints[0] * ints[1] / gcd(ints[0], ints[1])
+	for _, i := range ints[2:] {
+		result = result * i / gcd(result, i)
+	}
+	return result
+}

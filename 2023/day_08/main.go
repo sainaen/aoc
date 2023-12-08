@@ -88,25 +88,6 @@ func parseNode(l string) *node {
 	right := dirs[1][0 : len(dirs[1])-1]
 	return &node{id: parts[0], left: left, right: right}
 }
-func gcd(a, b uint64) uint64 {
-	for b != 0 {
-		t := b
-		b = a % b
-		a = t
-	}
-	return a
-}
-func lcm(a, b uint64) uint64 {
-	return a * b / gcd(a, b)
-}
-
-func lcmSlice(ints []uint64) uint64 {
-	result := lcm(ints[0], ints[1])
-	for _, i := range ints[2:] {
-		result = lcm(result, i)
-	}
-	return result
-}
 
 func part2(in input) {
 	nodes := make(map[string]*node)
@@ -120,7 +101,7 @@ func part2(in input) {
 			cur = append(cur, n)
 		}
 	}
-	steps := make([]uint64, len(cur))
+	steps := make([]int64, len(cur))
 	for i, c := range cur {
 	outer:
 		for p := 0; p < 100000; p++ {
@@ -143,6 +124,6 @@ func part2(in input) {
 		}
 	}
 	//fmt.Println(steps)
-	result := lcmSlice(steps)
+	result := lcm(steps...)
 	fmt.Printf("part 2 (%s): %v\n", in.kind, result)
 }
