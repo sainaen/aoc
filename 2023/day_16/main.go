@@ -36,141 +36,128 @@ func main() {
 }
 
 func part1(in input) {
-	fmt.Printf("part 1 (%s): %v\n", in.kind, countEnergized(in.lines, &beam{x: 0, y: 0, dir: '>'}))
+	fmt.Printf("part 1 (%s): %v\n", in.kind, countEnergized(in.lines, 0, 0, '>'))
 }
 
-type beam struct {
-	x   int
-	y   int
-	dir uint8
+type energizedField struct {
+	beamsField        [][]map[uint8]bool
+	processedAllBeams [][]bool
 }
 
-func countEnergized(field []string, initialBeam *beam) int {
-	energized := make([][]map[uint8]bool, len(field))
-	for i := range field {
-		energized[i] = make([]map[uint8]bool, len(field[i]))
-		for j := range energized[i] {
-			energized[i][j] = make(map[uint8]bool)
+func newEnergizedField(height, width int) *energizedField {
+	beams := make([][]map[uint8]bool, height)
+	processedAllBeams := make([][]bool, height)
+	for i := range beams {
+		processedAllBeams[i] = make([]bool, width)
+		beams[i] = make([]map[uint8]bool, width)
+		for j := range beams[i] {
+			processedAllBeams[i][j] = true
+			beams[i][j] = make(map[uint8]bool)
 		}
 	}
-	energized[initialBeam.x][initialBeam.y][initialBeam.dir] = true
-	for step := 0; step < 10_000; step++ {
-		if step == 10_000-1 {
-			fmt.Println("Out of loops :(")
+	return &energizedField{beamsField: beams, processedAllBeams: processedAllBeams}
+}
+
+func (e *energizedField) addBeam(x, y int, dir uint8) {
+	e.processedAllBeams[x][y] = false
+	e.beamsField[x][y][dir] = false
+}
+func (e *energizedField) hasBeam(x, y int, dir uint8) bool {
+	_, ok := e.beamsField[x][y][dir]
+	return ok
+}
+
+func (e *energizedField) moveBeam(x, y int, dir uint8) bool {
+	switch dir {
+	case '^':
+		x -= 1
+	case 'v':
+		x += 1
+	case '>':
+		y += 1
+	case '<':
+		y -= 1
+	default:
+		log.Fatalf("Unknown direction %c for beam at x=%d, y=%d\n", dir, x, y)
+	}
+	if 0 <= x && x < len(e.beamsField) && 0 <= y && y < len(e.beamsField[0]) {
+		if !e.hasBeam(x, y, dir) {
+			e.addBeam(x, y, dir)
+			return true
 		}
-		noMoreSteps := true
-		for i := 0; i < len(energized); i += 1 {
-			for j := 0; j < len(energized[i]); j += 1 {
-				c := field[i][j]
-				for dir := range energized[i][j] {
-					nextBeams := make([]*beam, 0)
-					if c == '.' {
-						if dir == '>' {
-							if j+1 < len(field[i]) {
-								nextBeams = append(nextBeams, &beam{x: i, y: j + 1, dir: dir})
-							}
-						} else if dir == '<' {
-							if j > 0 {
-								nextBeams = append(nextBeams, &beam{x: i, y: j - 1, dir: dir})
-							}
-						} else if dir == '^' {
-							if i > 0 {
-								nextBeams = append(nextBeams, &beam{x: i - 1, y: j, dir: dir})
-							}
-						} else if dir == 'v' {
-							if i+1 < len(field) {
-								nextBeams = append(nextBeams, &beam{x: i + 1, y: j, dir: dir})
-							}
-						}
-					} else if c == '-' {
-						if dir == '>' {
-							if j+1 < len(field[i]) {
-								nextBeams = append(nextBeams, &beam{x: i, y: j + 1, dir: dir})
-							}
-						} else if dir == '<' {
-							if j > 0 {
-								nextBeams = append(nextBeams, &beam{x: i, y: j - 1, dir: dir})
-							}
-						} else if dir == '^' || dir == 'v' {
-							if j > 0 {
-								nextBeams = append(nextBeams, &beam{x: i, y: j - 1, dir: '<'})
-							}
-							if j+1 < len(field[i]) {
-								nextBeams = append(nextBeams, &beam{x: i, y: j + 1, dir: '>'})
-							}
-						}
-					} else if c == '|' {
-						if dir == '>' || dir == '<' {
-							if i > 0 {
-								nextBeams = append(nextBeams, &beam{x: i - 1, y: j, dir: '^'})
-							}
-							if i+1 < len(field) {
-								nextBeams = append(nextBeams, &beam{x: i + 1, y: j, dir: 'v'})
-							}
-						} else if dir == '^' {
-							if i > 0 {
-								nextBeams = append(nextBeams, &beam{x: i - 1, y: j, dir: dir})
-							}
-						} else if dir == 'v' {
-							if i+1 < len(field) {
-								nextBeams = append(nextBeams, &beam{x: i + 1, y: j, dir: dir})
-							}
-						}
-					} else if c == '/' {
-						if dir == '>' {
-							if i > 0 {
-								nextBeams = append(nextBeams, &beam{x: i - 1, y: j, dir: '^'})
-							}
-						} else if dir == '<' {
-							if i+1 < len(field) {
-								nextBeams = append(nextBeams, &beam{x: i + 1, y: j, dir: 'v'})
-							}
-						} else if dir == '^' {
-							if j+1 < len(field[i]) {
-								nextBeams = append(nextBeams, &beam{x: i, y: j + 1, dir: '>'})
-							}
-						} else if dir == 'v' {
-							if j > 0 {
-								nextBeams = append(nextBeams, &beam{x: i, y: j - 1, dir: '<'})
-							}
-						}
-					} else if c == '\\' {
-						if dir == '>' {
-							if i+1 < len(field) {
-								nextBeams = append(nextBeams, &beam{x: i + 1, y: j, dir: 'v'})
-							}
-						} else if dir == '<' {
-							if i > 0 {
-								nextBeams = append(nextBeams, &beam{x: i - 1, y: j, dir: '^'})
-							}
-						} else if dir == '^' {
-							if j > 0 {
-								nextBeams = append(nextBeams, &beam{x: i, y: j - 1, dir: '<'})
-							}
-						} else if dir == 'v' {
-							if j+1 < len(field[i]) {
-								nextBeams = append(nextBeams, &beam{x: i, y: j + 1, dir: '>'})
-							}
-						}
-					} else {
-						log.Fatalf("Unknown c=%c at [%d, %d]\n", c, i, j)
-					}
-					for _, nb := range nextBeams {
-						if _, ok := energized[nb.x][nb.y][nb.dir]; !ok {
-							noMoreSteps = false
-							energized[nb.x][nb.y][nb.dir] = true
-						}
-					}
-				}
+	}
+	return false
+}
+
+func newDir(c, dir uint8) []uint8 {
+	if c == '.' {
+		return []uint8{dir}
+	}
+	if c == '-' {
+		if dir == '>' || dir == '<' {
+			return []uint8{dir}
+		}
+		return []uint8{'<', '>'}
+	}
+	if c == '|' {
+		if dir == '^' || dir == 'v' {
+			return []uint8{dir}
+		}
+		return []uint8{'^', 'v'}
+	}
+	if c == '/' {
+		switch dir {
+		case '>':
+			return []uint8{'^'}
+		case '<':
+			return []uint8{'v'}
+		case '^':
+			return []uint8{'>'}
+		case 'v':
+			return []uint8{'<'}
+		}
+	}
+	if c == '\\' {
+		switch dir {
+		case '>':
+			return []uint8{'v'}
+		case '<':
+			return []uint8{'^'}
+		case '^':
+			return []uint8{'<'}
+		case 'v':
+			return []uint8{'>'}
+		}
+	}
+	log.Fatalf("No new direction for %c hitting %c!\n", dir, c)
+	return nil
+}
+
+func (e *energizedField) updateBeams(field []string) bool {
+	updated := false
+	for i := 0; i < len(e.beamsField); i += 1 {
+		for j := 0; j < len(e.beamsField[i]); j += 1 {
+			if e.processedAllBeams[i][j] {
+				continue
 			}
-		}
-		if noMoreSteps {
-			break
+			for dir, isProcessed := range e.beamsField[i][j] {
+				if isProcessed {
+					continue
+				}
+				for _, ndir := range newDir(field[i][j], dir) {
+					updated = e.moveBeam(i, j, ndir) || updated
+				}
+				e.beamsField[i][j][dir] = true
+			}
+			e.processedAllBeams[i][j] = true
 		}
 	}
+	return updated
+}
 
+func (e *energizedField) count() int {
 	result := 0
-	for _, row := range energized {
+	for _, row := range e.beamsField {
 		for _, v := range row {
 			if len(v) > 0 {
 				result += 1
@@ -180,19 +167,29 @@ func countEnergized(field []string, initialBeam *beam) int {
 	return result
 }
 
-func (b *beam) toString() string {
-	return fmt.Sprintf("beam{x: %d, y: %d, dir: %c}", b.x, b.y, b.dir)
+func countEnergized(field []string, x, y int, dir uint8) int {
+	eField := newEnergizedField(len(field), len(field[0]))
+	eField.addBeam(x, y, dir)
+	for step := 0; step < 10_000; step++ {
+		if step == 10_000-1 {
+			fmt.Println("Out of loops :(")
+		}
+		if !eField.updateBeams(field) {
+			return eField.count()
+		}
+	}
+	return -1
 }
 
 func part2(in input) {
 	result := 0
 	for i := 0; i < len(in.lines[0]); i += 1 {
-		result = max(result, countEnergized(in.lines, &beam{x: 0, y: i, dir: 'v'}))
-		result = max(result, countEnergized(in.lines, &beam{x: len(in.lines) - 1, y: i, dir: '^'}))
+		result = max(result, countEnergized(in.lines, 0, i, 'v'))
+		result = max(result, countEnergized(in.lines, len(in.lines)-1, i, '^'))
 	}
 	for i := 0; i < len(in.lines); i += 1 {
-		result = max(result, countEnergized(in.lines, &beam{x: i, y: 0, dir: '>'}))
-		result = max(result, countEnergized(in.lines, &beam{x: i, y: len(in.lines[0]) - 1, dir: '<'}))
+		result = max(result, countEnergized(in.lines, i, 0, '>'))
+		result = max(result, countEnergized(in.lines, i, len(in.lines[0])-1, '<'))
 	}
 	fmt.Printf("part 2 (%s): %v\n", in.kind, result)
 }
