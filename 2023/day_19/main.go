@@ -41,9 +41,6 @@ hdj{m>838:A,pv}
 	part1(fullInput(inputFile))
 
 	fmt.Println("-------------")
-	//part2(sample(`in{x<3:A,R}
-	//
-	//ignored`))
 	part2(sample(sampleLines))
 	part2(fullInput(inputFile))
 }
@@ -59,31 +56,12 @@ func part1(in input) {
 		}
 		if collectingWorkflows {
 			w := parseWorkflow(l)
-			//if w.id == "in" {
-			//	fmt.Printf("in: %s\n", w.sprint())
-			//}
 			workflows[w.id] = w
 		} else {
 			p := parsePart(l)
 			if test(workflows, p) {
 				result += p.sum()
 			}
-			//action := "in"
-			//for action != "A" && action != "R" {
-			//	w, ok := workflows[action]
-			//	if !ok {
-			//		log.Fatalf("No workflow %s for part %v\n", action, p)
-			//	}
-			//	//fmt.Printf("matching %v with %v (%s)\n", p, w, action)
-			//	for _, r := range w.rules {
-			//		if r.cond(p) {
-			//			action = r.action
-			//			break
-			//		}
-			//	}
-			//}
-			//if action == "A" {
-			//}
 		}
 	}
 	fmt.Printf("part 1 (%s): %v\n", in.kind, result)
@@ -287,10 +265,9 @@ type PartRange struct {
 	fRanges []*FieldRange
 }
 
-func NewPartRange() *PartRange {
-	defMin := 1
-	defMax := 4000
-	return &PartRange{
+func NewPartRange(w *workflow) *PartRange {
+	defMin, defMax := 1, 4000
+	result := &PartRange{
 		fRanges: []*FieldRange{
 			{defMin, defMax},
 			{defMin, defMax},
@@ -298,6 +275,20 @@ func NewPartRange() *PartRange {
 			{defMin, defMax},
 		},
 	}
+	for j := 0; j < len(w.rules); j++ {
+		r := w.rules[j]
+		if r.op == '!' {
+			// always accept
+			continue
+		}
+		fRange := result.getFieldRange(r.field)
+		if r.op == '<' {
+			fRange.max = min(r.n-1, fRange.max)
+		} else if r.op == '>' {
+			fRange.min = max(r.n+1, fRange.min)
+		}
+	}
+	return result
 }
 
 func (r *PartRange) sprint() string {
@@ -407,35 +398,13 @@ func part2(in input) {
 		workflows[w.id] = w
 	}
 	acceptances := accepted(workflows, "in", make([]*rule, 0))
-	for _, a := range acceptances {
-		fmt.Println(a.sprint())
-	}
-	//fmt.Println(len(acceptances))
 	allTheRanges := make([]*PartRange, len(acceptances))
 	for i := 0; i < len(acceptances); i++ {
-		w := acceptances[i]
-		//fmt.Println(w.sprint())
-		pRange := NewPartRange()
-		for j := 0; j < len(w.rules); j++ {
-			r := w.rules[j]
-			if r.op == '!' {
-				// always accept
-				continue
-			}
-			fRange := pRange.getFieldRange(r.field)
-			if r.op == '<' {
-				fRange.max = min(r.n-1, fRange.max)
-			} else if r.op == '>' {
-				fRange.min = max(r.n+1, fRange.min)
-			}
-		}
-		allTheRanges[i] = pRange
+		allTheRanges[i] = NewPartRange(acceptances[i])
 	}
-	fmt.Println("\t", allTheRanges[0].sprint())
 	distinctRanges := make([]*PartRange, 1)
 	distinctRanges[0] = allTheRanges[0]
 	for _, r := range allTheRanges[1:] {
-		fmt.Println(r.sprint())
 		sr := []*PartRange{r}
 		for _, dr := range distinctRanges {
 			nsr := make([]*PartRange, 0)
@@ -444,31 +413,12 @@ func part2(in input) {
 			}
 			sr = nsr
 		}
-		for _, dr := range sr {
-			fmt.Println("\t", dr.sprint())
-		}
 		distinctRanges = append(distinctRanges, sr...)
 	}
-	fmt.Println("-")
-	slices.SortFunc(distinctRanges, func(a, b *PartRange) int {
-		for i, ar := range a.fRanges {
-			br := b.fRanges[i]
-			v := ar.min - br.min
-			if v == 0 {
-				v = ar.max - br.max
-			}
-			if v != 0 {
-				return v
-			}
-		}
-		return 0
-	})
 	for _, r := range distinctRanges {
-		t := r.test(workflows)
-		if !t {
+		if !r.test(workflows) {
 			log.Fatalln("One of the ranges is incorrect", r.sprint())
 		}
-		fmt.Println(r.sprint())
 	}
 	result := 0
 	for _, r := range distinctRanges {
