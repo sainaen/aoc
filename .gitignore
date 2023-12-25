@@ -1,0 +1,6 @@
+input
+input_*
+!input_*.age
+input.txt
+*input
+day*.txt
